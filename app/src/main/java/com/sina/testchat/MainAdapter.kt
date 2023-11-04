@@ -9,17 +9,16 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.sina.testchat.db.Message
 
-class MainAdapter : ListAdapter<Message, MainAdapter.MessageViewHolder>(object : DiffUtil.ItemCallback<Message?>() {
-    override fun areItemsTheSame(oldItem: Message, newItem: Message): Boolean {
-        return oldItem === newItem
-    }
+class MainAdapter :
+    ListAdapter<Message, MainAdapter.MessageViewHolder>(object : DiffUtil.ItemCallback<Message?>() {
+        override fun areItemsTheSame(oldItem: Message, newItem: Message): Boolean {
+            return oldItem === newItem
+        }
 
-    override fun areContentsTheSame(oldItem: Message, newItem: Message): Boolean {
-        return oldItem.text == newItem.text && oldItem.timestamp == newItem.timestamp
-    }
-}) {
-
-    private var recyclerView: RecyclerView? = null
+        override fun areContentsTheSame(oldItem: Message, newItem: Message): Boolean {
+            return oldItem.timestamp == newItem.timestamp
+        }
+    }) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -32,29 +31,11 @@ class MainAdapter : ListAdapter<Message, MainAdapter.MessageViewHolder>(object :
         holder.bind(message)
     }
 
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        super.onAttachedToRecyclerView(recyclerView)
-        this.recyclerView = recyclerView
-    }
-
-    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView)
-        this.recyclerView = null
-    }
-
-    override fun submitList(list: List<Message>?) {
-        super.submitList(list)
-        recyclerView?.let {
-            val itemCount = list?.size ?: 0
-            it.scrollToPosition(itemCount - 1)
-        }
-    }
-
     inner class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvMessageText: TextView = itemView.findViewById(R.id.tvMessageText)
 
         fun bind(message: Message) {
-            tvMessageText.text = message.text
+            tvMessageText.text = message.text + message.createDate
         }
     }
 }

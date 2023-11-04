@@ -4,7 +4,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DiffUtil
 import com.sina.testchat.databinding.ActivityMainBinding
+import com.sina.testchat.db.Message
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 
@@ -25,10 +27,12 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launchWhenStarted {
             viewModel.newMessageReceived.collect { newMessageReceived ->
                 if (newMessageReceived) {
-                    val messageList = viewModel.messageList.value
-                    // اینجا می‌توانید درخواست جدید را به دیتابیس بدهید و لیست را به Adapter بدهید
-                    adapter.submitList(messageList)
-                    binding.recyclerView.smoothScrollToPosition(messageList.size - 1)
+                    val newMessages: List<Message> = viewModel.messageList.value.takeLast(1)
+                    if (newMessages.isNotEmpty()) {
+                        adapter.submitList(adapter.currentList + newMessages) {
+                            binding.recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
+                        }
+                    }
                 }
             }
         }

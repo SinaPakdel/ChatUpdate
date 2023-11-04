@@ -3,14 +3,19 @@ package com.sina.testchat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sina.testchat.db.Message
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.*
+import javax.inject.Inject
 
-class MainViewModel : ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(val repository: MessageRepository) : ViewModel() {
     private val _newMessageReceived = MutableStateFlow(false)
     val newMessageReceived: StateFlow<Boolean> = _newMessageReceived.asStateFlow()
 
@@ -18,31 +23,40 @@ class MainViewModel : ViewModel() {
     val messageList: StateFlow<List<Message>> = _messageList.asStateFlow()
 
     private var messageCounter = 0
+    private val newMessages = MutableStateFlow(emptyList<Message>())
 
     init {
-        val timer = Timer()
-        timer.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                val currentMessageList = _messageList.value
-                val newMessage = Message(text = "New Message $messageCounter")
-                messageCounter++
-                val updatedList = currentMessageList.toMutableList().apply { add(newMessage) }
-                _messageList.value = updatedList
-                _newMessageReceived.value = true
-
-                // بعد از مدتی (مثلاً 100 میلی‌ثانیه) مقدار _newMessageReceived را دوباره به false تنظیم می‌کنیم
-                viewModelScope.launch {
-                    delay(100)
-                    _newMessageReceived.value = false
-                }
-            }
-        }, 1000, 1000)
-    }
-
-    // شما می‌توانید از این تابع برای کنترل تغییر _newMessageReceived به صورت دستی استفاده کنید
-    fun setNewMessageReceived(value: Boolean) {
+        getMessage()
         viewModelScope.launch {
-            _newMessageReceived.emit(value)
+            while (true) {
+                val newMessageText = generateRandomWord(4)
+                val newMessage = Message(text = newMessageText)
+                messageCounter++
+                repository.insertMessage(newMessage)
+                newMessages.value += newMessage
+                _newMessageReceived.value = true
+                delay(1000)
+                _newMessageReceived.value = false
+                delay(1000)
+            }
         }
     }
+
+    private fun getMessage() {
+        viewModelScope.launch {
+            repository.messages.collectLatest { messages ->
+                _messageList.value = messages
+                val updatedMessages = newMessages.value + messages
+                newMessages.value = emptyList()
+                _messageList.value = updatedMessages
+            }
+        }
+    }
+}
+
+fun generateRandomWord(length: Int): String {
+    val allowedChars = ('a'..'z') + ('A'..'Z')
+    return (1..length)
+        .map { allowedChars.random() }
+        .joinToString("")
 }

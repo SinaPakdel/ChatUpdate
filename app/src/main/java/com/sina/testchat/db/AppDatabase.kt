@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.sina.testchat.di.ApplicationScope
+import com.sina.testchat.generateRandomWord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,24 +25,15 @@ abstract class AppDatabase : RoomDatabase() {
             applicationScope.launch {
                 dao.insertMessage(
                     Message(
-                        text = "Salam1"
+                        text = generateRandomWord(4)
                     )
                 )
                 dao.insertMessage(
                     Message(
-                        text = "Salam2"
+                        text = generateRandomWord(4)
                     )
                 )
-                dao.insertMessage(
-                    Message(
-                        text = "Salam3"
-                    )
-                )
-                dao.insertMessage(
-                    Message(
-                        text = "Salam4"
-                    )
-                )
+
             }
         }
     }

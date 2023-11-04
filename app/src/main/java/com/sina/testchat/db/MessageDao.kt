@@ -11,6 +11,6 @@ interface MessageDao {
     @Query("SELECT * FROM message ORDER BY timestamp ASC")
     fun getAllMessages(): Flow<List<Message>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertMessage(message: Message)
 }
