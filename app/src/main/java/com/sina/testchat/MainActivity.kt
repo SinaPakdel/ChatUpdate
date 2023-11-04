@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DiffUtil
 import com.sina.testchat.databinding.ActivityMainBinding
 import com.sina.testchat.db.Message
@@ -23,7 +24,7 @@ class MainActivity : AppCompatActivity() {
 
         adapter = MainAdapter()
         binding.recyclerView.adapter = adapter
-
+        binding.recyclerView.itemAnimator = DefaultItemAnimator()
         lifecycleScope.launchWhenStarted {
             viewModel.newMessageReceived.collect { newMessageReceived ->
                 if (newMessageReceived) {
